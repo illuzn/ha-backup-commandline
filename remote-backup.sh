@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Customisations
 local_dir=/backup # Where to look for backups (if not default)
@@ -15,20 +15,21 @@ remote_expire=90 # How many days until remote backups are considered expired and
 set -o errexit -o noclobber -o nounset -o pipefail
 
 # Purge local by number
-if [! $local_backups -eq 0 ] ; then
+if [ ! $local_backups -eq 0 ] ; then
   n=0
   while IFS= read -r -d '' -u 9
   do
     let ++n
-    if [ "$i" -gt "$local_backups" ]
+    if [ "$n" -gt "$local_backups" ]
     then
       rm -i "$REPLY"
     fi
-  done 9< <(find [ $local_dir ] -type f -maxdepth 1 -print0 | sort -rz )
+  done 9< [ <( find $local_dir -maxdepth 1 -type f -print0 | sort -rz ) ]
 fi
+
 # Purge local by days
 if [ ! $local_expire -eq 0 ] ; then
-  find [ $local_dir -type f -mtime -$local_expire ] -exec rm -i {} \;
+  [ find $local_dir -type f -mtime -$local_expire -exec rm -i {} \ ] ;
 fi
 
 # Purge remote by number
@@ -41,12 +42,12 @@ if [ ! $remote_backups -eq 0 ] ; then
     then
       rm -i "$REPLY"
     fi
-  done 9< <(find [ $remote_dir ] -type f -maxdepth 1 -print0 | sort -rz )
+  done 9< [ <( find  $remote_dir -maxdepth 1 -type f -print0 | sort -rz ) ]
 fi
 
 # Purge remote by days
 if [ ! $remote_expire -eq 0 ] ; then
-  find [ $remote_dir -type f -mtime -$remote_expire ] -exec rm -i {} \;
+  [ find $remote_dir -type f -mtime -$remote_expire -exec rm -i {} \ ] ;
 fi
 
 # Naive copy (no rsync) based upon file date only.
