@@ -24,12 +24,12 @@ if [ ! $local_backups -eq 0 ]; then
     then
       rm -f "$REPLY"
     fi
-  done 9<  <( find $local_dir -maxdepth 1 -type f -print0 | sort -rz )
+  done 9<  <( find $local_dir -type f -exec ls -t --zero {} + )
 fi
 
 # Purge local by days
 if [ ! $local_expire -eq 0 ]; then
-  find $local_dir -type f -mtime $local_expire -exec rm -f {} \;
+  find $local_dir -type f -mtime +$local_expire -exec rm -f {} \;
 fi
 
 # Purge remote by number
@@ -42,13 +42,13 @@ if [ ! $remote_backups -eq 0 ]; then
     then
       rm -f "$REPLY"
     fi
-  done 9<  <( find  $remote_dir -maxdepth 1 -type f -print0 | sort -rz )
+  done 9<  <( find $remote_dir -type f -exec ls -t --zero {} + )
 fi
 
 # Purge remote by days
 if [ ! $remote_expire -eq 0 ]; then
-  find $remote_dir -type f -mtime $remote_expire -exec rm -f {} \;
+  find $remote_dir -type f -mtime +$remote_expire -exec rm -f {} \;
 fi
 
 # Naive copy (no rsync) based upon file date only.
-cp -ur $local_dir $remote_dir
+cp -u $local_dir* $remote_dir
